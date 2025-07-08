@@ -100,4 +100,54 @@ from sales_amount_employees s
 group by day_of_week, seller, number_of_day
 order by number_of_day, seller;
 
+--отчет по возрастным группам покупателей
+select 
+	'16-25' as age_category,
+	COUNT(CASE WHEN age between 16 and 25 THEN 1 END) AS age_count	
+from customers c
+union all
+select 
+	'26-40' as age_category,
+	COUNT(CASE WHEN age between 26 and 40 THEN 1 END) AS age_count	
+from customers c
+union all
+select 
+	'40+' as age_category,
+	COUNT(CASE WHEN age > 40 THEN 1 END) AS age_count	
+from customers c
+
+--отчет с количеством покупателей и выручкой по месяцам
+select
+TO_CHAR(s.sale_date, 'YYYY-MM') as selling_month,
+count(distinct customer_id) as total_customers,
+round(sum(s.quantity * p.price),0) as income
+from sales s
+join products p 
+	on s.product_id = p.product_id
+group by extract(month from s.sale_date),TO_CHAR(s.sale_date, 'YYYY-MM')
+order by extract(month from s.sale_date);
+
+--отчет с покупателями первая покупка которых пришлась на время проведения специальных акций
+with ordered_sales as (
+	select 
+		s.customer_id,
+		s.sale_date,
+		s.sales_person_id,
+		s.product_id,
+		p.price,
+		row_number() over (partition by s.customer_id order by s.sale_date) as rn
+	from sales s
+	join products p on s.product_id=p.product_id
+	order by customer_id, s.sale_date
+)
+select 
+concat(c.first_name,' ',c.last_name) as customer,
+s.sale_date,
+concat(e.first_name,' ',e.last_name) as seller
+from ordered_sales s
+join employees e on s.sales_person_id = e.employee_id
+join customers c on s.customer_id = c.customer_id
+where rn=1 and s.price=0;
+
+
 
