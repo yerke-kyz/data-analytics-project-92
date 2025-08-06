@@ -3,15 +3,15 @@
 -- -----------------------------------------------------------------------------
 with sellers_ops as (
     select
-        e.employee_id,                           
+    	e.employee_id,
         concat(e.first_name, ' ', e.last_name) as seller,
         count(s.sales_id) as operations
     from
         employees e
     left join
         sales s
-    on
-    	e.employee_id = s.sales_person_id
+	on
+	    e.employee_id = s.sales_person_id
     group by
         e.employee_id,
         seller
@@ -23,7 +23,7 @@ sales_amount as (
         s.sales_person_id,
         s.quantity * p.price as amount
     from
-        sales s
+    	sales s
     join
         products p
     on
@@ -60,7 +60,8 @@ with sales_avg as (
         sales s
     join
         products p
-            on s.product_id = p.product_id
+    on
+        s.product_id = p.product_id
     join
         employees e
     on
@@ -70,19 +71,19 @@ with sales_avg as (
 )
 
 select
-    seller,
-    avg_income
+    sa.seller,
+    sa.avg_income
 from
-    sales_avg
+    sales_avg sa
 where
-    avg_income < (
+    sa.avg_income < (
         select
-            avg(avg_income)
+            avg(sa2.avg_income)
         from
-            sales_avg
+            sales_avg sa2
     )
 order by
-    avg_income
+    sa.avg_income
 ;
 
 -- -----------------------------------------------------------------------------
@@ -111,18 +112,18 @@ with sales_per_day as (
 )
 
 select
-    seller,
-    day_name as day_of_week,
-    floor(sum(amount)) as income
+    sd.seller,
+    sd.day_name as day_of_week,
+    floor(sum(sd.amount)) as income
 from
-    sales_per_day
+    sales_per_day sd
 group by
-    day_no,
-    seller,
-    day_name
+    sd.day_no,
+    sd.seller,
+    sd.day_name
 order by
-    day_no,
-    seller
+    sd.day_no,
+    sd.seller
 ;
 
 -- -----------------------------------------------------------------------------
@@ -151,18 +152,18 @@ with sales_per_day_cap as (
 )
 
 select
-    seller,
-    day_name as day_of_week,
-    round(sum(amount), 0) as income
+    sdc.seller,
+    sdc.day_name as day_of_week,
+    round(sum(sdc.amount), 0) as income
 from
-    sales_per_day_cap
+    sales_per_day_cap sdc
 group by
-    day_no,
-    seller,
-    day_name
+    sdc.day_no,
+    sdc.seller,
+    sdc.day_name
 order by
-    day_no,
-    seller
+    sdc.day_no,
+    sdc.seller
 ;
 
 -- -----------------------------------------------------------------------------
@@ -170,25 +171,25 @@ order by
 -- -----------------------------------------------------------------------------
 select
     '16-25' as age_category,
-    count(*) filter (where age between 16 and 25) as age_count
+    count(c.*) filter (where age between 16 and 25) as age_count
 from
-    customers
+    customers c
 
 union all
 
 select
     '26-40' as age_category,
-    count(*) filter (where age between 26 and 40) as age_count
+    count(c.*) filter (where age between 26 and 40) as age_count
 from
-    customers
+    customers c
 
 union all
 
 select
     '40+' as age_category,
-    count(*) filter (where age > 40) as age_count
+    count(c.*) filter (where age > 40) as age_count
 from
-    customers
+    customers c
 ;
 
 -- -----------------------------------------------------------------------------
