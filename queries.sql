@@ -46,8 +46,7 @@ group by
 order by
     sum(sa.amount) desc
 limit
-    10
-;
+    10;
 
 -- -----------------------------------------------------------------------------
 -- 2. Продавцы с выручкой ниже средней
@@ -77,14 +76,12 @@ from
     sales_avg sa
 where
     sa.avg_income < (
-        select
-            avg(sa2.avg_income)
+        select avg(sa2.avg_income)
         from
             sales_avg sa2
     )
 order by
-    sa.avg_income
-;
+    sa.avg_income;
 
 -- -----------------------------------------------------------------------------
 -- 3. Выручка по продавцу и дню недели (дни в lowercase)
@@ -123,8 +120,7 @@ group by
     sd.day_name
 order by
     sd.day_no,
-    sd.seller
-;
+    sd.seller;
 
 -- -----------------------------------------------------------------------------
 -- 4. Выручка по продавцу и дню недели (дни с сохранением регистра)
@@ -163,8 +159,7 @@ group by
     sdc.day_name
 order by
     sdc.day_no,
-    sdc.seller
-;
+    sdc.seller;
 
 -- -----------------------------------------------------------------------------
 -- 5. Отчёт по возрастным группам покупателей
@@ -189,8 +184,7 @@ select
     '40+' as age_category,
     count(c.*) filter (where age > 40) as age_count
 from
-    customers c
-;
+    customers c;
 
 -- -----------------------------------------------------------------------------
 -- 6. Количество покупателей и выручка по месяцам
@@ -208,8 +202,7 @@ on
 group by
     to_char(s.sale_date, 'YYYY-MM')
 order by
-    to_char(s.sale_date, 'YYYY-MM')
-;
+    to_char(s.sale_date, 'YYYY-MM');
 
 -- -----------------------------------------------------------------------------
 -- 7. Первая покупка во время специальных акций
@@ -251,5 +244,4 @@ on
 	os.customer_id = c.customer_id
 where
     os.rn = 1
-    and os.price = 0
-;
+    and os.price = 0;
