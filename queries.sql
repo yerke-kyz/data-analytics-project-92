@@ -24,7 +24,7 @@ with tab as (
 select 
 tab.seller,
 tab.operations,
-sum(sa.amount) as income
+floor(sum(sa.amount)) as income
 from tab 
 join sales_amount sa on tab.employee_id =sa.sales_person_id
 group by tab.seller,
@@ -33,23 +33,23 @@ order by sum(sa.amount) desc
 limit 10;
 
 
---отчет с продавцами, чья выручка ниже средней выручки всех продавцов
+--отчет с продавцами, чья средняя выручка ниже средней выручки всех продавцов
 with  sales_amount_employees as (
 	select
 	concat(e.first_name,' ',e.last_name) as seller,
-	s.quantity * p.price as amount
+	floor(avg(s.quantity * p.price)) as amount
 	from sales s
 	join products p 
 	on s.product_id = p.product_id
 	join employees e on e.employee_id =s.sales_person_id
+	group by seller
 )
 select 
 seller,
-round(avg(amount),0) as average_income
-from sales_amount_employees
-where amount < (select avg(amount) from sales_amount_employees)
-group by seller
-order by round(avg(amount),0);
+amount as average_income
+from sales_amount_employees sae
+where sae.amount < (select avg(amount) from sales_amount_employees)
+order by sae.amount;
 
 --отчет с данными по выручке по каждому продавцу и дню недели
 with  sales_amount_employees as (
@@ -61,7 +61,7 @@ with  sales_amount_employees as (
 		when extract(dow from s.sale_date) = 0 then 7
 		else extract(dow from s.sale_date)
 	end as number_of_day,
-	TO_CHAR(s.sale_date, 'Day') AS day_of_week
+	lower(TO_CHAR(s.sale_date, 'Day')) AS day_of_week
 	from sales s
 	join products p 
 	on s.product_id = p.product_id
@@ -70,7 +70,7 @@ with  sales_amount_employees as (
 select
 seller,
 day_of_week,
-round(sum(s.amount),0) as income
+floor(sum(s.amount)) as income
 from sales_amount_employees s
 group by day_of_week, seller, number_of_day
 order by number_of_day, seller;
@@ -120,7 +120,7 @@ from customers c
 select
 TO_CHAR(s.sale_date, 'YYYY-MM') as selling_month,
 count(distinct customer_id) as total_customers,
-round(sum(s.quantity * p.price),0) as income
+floor(sum(s.quantity * p.price)) as income
 from sales s
 join products p 
 	on s.product_id = p.product_id
